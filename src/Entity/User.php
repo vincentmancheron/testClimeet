@@ -16,13 +16,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getAlerts'])]
+    #[Groups(['getAlerts', 'getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['getUsers'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(['getUsers'])]
     private array $roles = [];
 
     /**
@@ -32,6 +34,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column]
+    #[Groups(['getUsers'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
@@ -41,13 +44,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $deletedAt = null;
 
     #[ORM\Column(length: 40)]
+    #[Groups(['getUsers'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 40)]
+    #[Groups(['getUsers'])]
     private ?string $firstname = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Alert::class)]
     private Collection $Alerts;
+
+    // private UserPasswordHasherInterface $userPasswordHasher;
 
     // * Constructor:
     public function __construct()
