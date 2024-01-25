@@ -18,10 +18,11 @@ class AlertController extends AbstractController
     #[Route('/alerts', name: 'app_alert_create', methods: ['POST'])]
     public function createOne(Request $request, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
-        $alert = $serializer->deserialize($request->getContent(), Alert::class, 'json');
+        $alert = $serializer->deserialize($request->getContent(), Alert::class, 'json', ['groups' => 'getAlerts']);
+        $alert->setUser($this->getUser());
         $em->persist($alert);
         $em->flush();
-        $jsonAlert = $serializer->serialize($alert, 'json', []);
+        $jsonAlert = $serializer->serialize($alert, 'json', ['groups' => 'getAlerts']);
         return new JsonResponse($jsonAlert, Response::HTTP_CREATED, [], true);
     }
 
@@ -40,8 +41,11 @@ class AlertController extends AbstractController
     #[Route('/alerts', name: 'app_alerts', methods: ['GET'])]
     public function findAll(AlertRepository $repository, SerializerInterface $serializer): JsonResponse
     {
-        $alerts = $repository->findAll();
-        $jsonAlerts = $serializer->serialize($alerts, 'json');
+        $user = $this->getUser();
+        $alerts = $repository->findBy(
+            ['deletedAt' => null, 'user' => $user]
+        );
+        $jsonAlerts = $serializer->serialize($alerts, 'json', ['groups' => 'getAlerts']);
 
         return new JsonResponse($jsonAlerts, Response::HTTP_OK, [], true);
     }

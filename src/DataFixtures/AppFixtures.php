@@ -44,9 +44,13 @@ class AppFixtures extends Fixture
 
         for ($i = 1; $i <= 10; $i++) {
             $alert = new Alert();
-            $alert->setDevise('BTC')
+            $alert->setDeviseBase('Bitcoin')
+            ->setIdBase('BTC')
+            ->setDeviseDiv('Dollars')
+            ->setIdDiv('USD')
             ->setMin(20000)
-            ->setMax(30000);
+            ->setMax(30000)
+            ->setUser($user);
             $manager->persist($alert);
         }
         

@@ -3,9 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -13,6 +16,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getAlerts'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -42,10 +46,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 40)]
     private ?string $firstname = null;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Alert::class)]
+    private Collection $Alerts;
+
     // * Constructor:
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->Alerts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -183,6 +191,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstname(string $firstname): static
     {
         $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Alert>
+     */
+    public function getAlerts(): Collection
+    {
+        return $this->Alerts;
+    }
+
+    public function addAlert(Alert $alert): static
+    {
+        if (!$this->Alerts->contains($alert)) {
+            $this->Alerts->add($alert);
+            $alert->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAlert(Alert $alert): static
+    {
+        if ($this->Alerts->removeElement($alert)) {
+            // set the owning side to null (unless already changed)
+            if ($alert->getUser() === $this) {
+                $alert->setUser(null);
+            }
+        }
 
         return $this;
     }
